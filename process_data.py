@@ -94,13 +94,30 @@ l = 0
 
 data_folder_name = 'processed_data_noise'
 
-maybe_makedirs(data_folder_name)
+maybe_makedirs(data_folder_name) # build data folder 
+import pdb; pdb.set_trace()
+#multiple levels of data with position, vel, acc as level 1. Each of level will have x and y values
+"""MultiIndex([(    'position', 'x'),
+        (    'position', 'y'),
+        (    'velocity', 'x'),
+        (    'velocity', 'y'),
+        ('acceleration', 'x'),
+        ('acceleration', 'y')],
+        )
+"""
 data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y']])
 
 # Process ETH-UCY
 for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
     for data_class in ['train', 'val', 'test']:
         env = Environment(node_type_list=['PEDESTRIAN'], standardization=standardization)
+        """ 
+        {'scenes': None, 'node_type_list': ['PEDESTRIAN'], 'attention_radius': {(PEDESTRIAN, PEDESTRIAN): 3.0}, 
+        'NodeType': [PEDESTRIAN], 'robot_type': None, 'standardization': {'PEDESTRIAN': {'position': {'x': {'mean': 0, 'std': 1},
+        'y': {'mean': 0, 'std': 1}}, 'velocity': {'x': {'mean': 0, 'std': 2}, 
+        'y': {'mean': 0, 'std': 2}}, 'acceleration': {'x': {'mean': 0, 'std': 1}, 'y': {'mean': 0, 'std': 1}}}}, 
+        'standardize_param_memo': {}, '_scenes_resample_prop': None}
+        """
         attention_radius = dict()
         attention_radius[(env.NodeType.PEDESTRIAN, env.NodeType.PEDESTRIAN)] = 3.0
         env.attention_radius = attention_radius
