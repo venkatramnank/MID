@@ -95,7 +95,7 @@ l = 0
 data_folder_name = 'processed_data_noise'
 
 maybe_makedirs(data_folder_name) # build data folder 
-import pdb; pdb.set_trace()
+
 #multiple levels of data with position, vel, acc as level 1. Each of level will have x and y values
 """MultiIndex([(    'position', 'x'),
         (    'position', 'y'),
@@ -131,9 +131,9 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
                     input_data_dict = dict()
                     full_data_path = os.path.join(subdir, file)
                     print('At', full_data_path)
-
+                    
                     data = pd.read_csv(full_data_path, sep='\t', index_col=False, header=None)
-                    data.columns = ['frame_id', 'track_id', 'pos_x', 'pos_y']
+                    data.columns = ['frame_id', 'track_id', 'pos_x', 'pos_y'] #in each txt file
                     data['frame_id'] = pd.to_numeric(data['frame_id'], downcast='integer')
                     data['track_id'] = pd.to_numeric(data['track_id'], downcast='integer')
 
@@ -144,6 +144,8 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
                     data['node_type'] = 'PEDESTRIAN'
                     data['node_id'] = data['track_id'].astype(str)
 
+                    # at this point you have the following columns:
+                    # frame_id, track_id, pos_x, pos_y, node_type, node_id
                     data.sort_values('frame_id', inplace=True)
 
                     if desired_source == "eth" and data_class == "test":
@@ -157,13 +159,19 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
 
                         #data = pd.concat([data, data_gauss])
 
+                    # mean standardization
                     data['pos_x'] = data['pos_x'] - data['pos_x'].mean()
                     data['pos_y'] = data['pos_y'] - data['pos_y'].mean()
 
-                    max_timesteps = data['frame_id'].max()
+                    max_timesteps = data['frame_id'].max() # frame id based maximum timesteps
 
                     scene = Scene(timesteps=max_timesteps+1, dt=dt, name=desired_source + "_" + data_class, aug_func=augment if data_class == 'train' else None)
-
+                    """
+                    scene class contains the following:
+                    {'map': None, 'timesteps': 594, 'dt': 0.4, 'name': 'eth_train', 'nodes': [], 'robot': None, 'temporal_scene_graph': None, 
+                    'frequency_multiplier': 1, 'description': '', 'aug_func': <function augment at 0x7f71d6931a80>, 
+                    'non_aug_scene': None}
+                    """
                     for node_id in pd.unique(data['node_id']):
 
                         node_df = data[data['node_id'] == node_id]
@@ -175,9 +183,10 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
 
                         new_first_idx = node_df['frame_id'].iloc[0]
 
-                        x = node_values[:, 0]
-                        y = node_values[:, 1]
-                        vx = derivative_of(x, scene.dt)
+                        x = node_values[:, 0] # x.shape : (20,)
+                        y = node_values[:, 1] # y.shape : (20,)
+                        # These derivatives are to find the velocity and acceleration
+                        vx = derivative_of(x, scene.dt) #usage of np.derivative and scene.dt = 0.4
                         vy = derivative_of(y, scene.dt)
                         ax = derivative_of(vx, scene.dt)
                         ay = derivative_of(vy, scene.dt)
@@ -191,6 +200,13 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
 
                         node_data = pd.DataFrame(data_dict, columns=data_columns)
                         node = Node(node_type=env.NodeType.PEDESTRIAN, node_id=node_id, data=node_data)
+                        """
+                        node object contains:
+                        {'type': PEDESTRIAN, 'id': '1', 'length': None, 'width': None, 'height': None, 'first_timestep': 0, 'non_aug_node': None, 
+                        'data': <environment.data_structures.DoubleHeaderNumpyArray object at 0x7f717173fb90>, 
+                        'is_robot': False, '_last_timestep': None, 'description': '', 'frequency_multiplier': 1, 'forward_in_time_on_next_override': False}
+                        
+                        """
                         node.first_timestep = new_first_idx
 
                         scene.nodes.append(node)
