@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import dill
 import pickle
+import itertools
 
 from environment import Environment, Scene, Node, derivative_of
 
@@ -12,21 +13,24 @@ pred_indices = [2, 3]
 state_dim = 6
 frame_diff = 10
 desired_frame_diff = 1
-dt = 0.4
+dt = 0.033 #30 fps
 
 standardization = {
     'PEDESTRIAN': {
         'position': {
             'x': {'mean': 0, 'std': 1},
-            'y': {'mean': 0, 'std': 1}
+            'y': {'mean': 0, 'std': 1},
+            'z' : {'mean': 0, 'std': 1}
         },
         'velocity': {
             'x': {'mean': 0, 'std': 2},
-            'y': {'mean': 0, 'std': 2}
+            'y': {'mean': 0, 'std': 2},
+            'z' : {'mean' : 0, 'std': 2}
         },
         'acceleration': {
             'x': {'mean': 0, 'std': 1},
-            'y': {'mean': 0, 'std': 1}
+            'y': {'mean': 0, 'std': 1},
+            'z': {'mean': 0, 'std': 1}
         }
     }
 }
@@ -45,35 +49,51 @@ def maybe_makedirs(path_to_create):
         if not os.path.isdir(path_to_create):
             raise
 
-def augment_scene(scene, angle):
-    def rotate_pc(pc, alpha):
-        M = np.array([[np.cos(alpha), -np.sin(alpha)],
-                      [np.sin(alpha), np.cos(alpha)]])
+def augment_scene(scene, angles):
+    """Scene augmentor using angles
+    """
+    def rotate_pc(pc, angles):
+        alpha, beta, gamma = angles
+        alpha = alpha * np.pi / 180
+        beta = beta * np.pi / 180
+        gamma = gamma * np.pi / 180
+        M = np.array([
+            [np.cos(alpha) * np.cos(beta), np.cos(alpha) * np.sin(beta) * np.sin(gamma) - np.sin(alpha) * np.cos(gamma), np.cos(alpha) * np.sin(beta) * np.cos(gamma) + np.sin(alpha) * np.sin(gamma)],
+            [np.sin(alpha) * np.cos(beta), np.sin(alpha) * np.sin(beta) * np.sin(gamma) + np.cos(alpha) * np.cos(gamma), np.sin(alpha) * np.sin(beta) * np.cos(gamma) - np.cos(alpha) * np.sin(gamma)],
+            [-np.sin(beta), np.cos(beta) * np.sin(gamma), np.cos(beta) * np.cos(gamma)]
+        ])
         return M @ pc
 
-    data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y']])
+    data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y', 'z']])
 
     scene_aug = Scene(timesteps=scene.timesteps, dt=scene.dt, name=scene.name)
 
-    alpha = angle * np.pi / 180
-
+    
     for node in scene.nodes:
         x = node.data.position.x.copy()
         y = node.data.position.y.copy()
+        z = node.data.position.z.copy()
+        
 
-        x, y = rotate_pc(np.array([x, y]), alpha)
+        x, y, z = rotate_pc(np.array([x, y, z]), angles)
 
         vx = derivative_of(x, scene.dt)
         vy = derivative_of(y, scene.dt)
+        vz = derivative_of(z, scene.dt)
         ax = derivative_of(vx, scene.dt)
         ay = derivative_of(vy, scene.dt)
+        az = derivative_of(vz, scene.dt)
+        
 
         data_dict = {('position', 'x'): x,
-                     ('position', 'y'): y,
-                     ('velocity', 'x'): vx,
-                     ('velocity', 'y'): vy,
-                     ('acceleration', 'x'): ax,
-                     ('acceleration', 'y'): ay}
+                    ('position', 'y'): y,
+                    ('position', 'z'): z,
+                    ('velocity', 'x'): vx,
+                    ('velocity', 'y'): vy,
+                    ('velocity', 'z'): vz,
+                    ('acceleration', 'x'): ax,
+                    ('acceleration', 'y'): ay,
+                    ('acceleration', 'z'): az}
 
         node_data = pd.DataFrame(data_dict, columns=data_columns)
 
@@ -92,7 +112,7 @@ def augment(scene):
 nl = 0
 l = 0
 
-data_folder_name = 'processed_data_noise'
+data_folder_name = 'processed_data'
 
 maybe_makedirs(data_folder_name) # build data folder 
 
@@ -105,10 +125,10 @@ maybe_makedirs(data_folder_name) # build data folder
         ('acceleration', 'y')],
         )
 """
-data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y']])
+data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y', 'z']])
 
 # Process ETH-UCY
-for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
+for desired_source in ['collide']:
     for data_class in ['train', 'val', 'test']:
         env = Environment(node_type_list=['PEDESTRIAN'], standardization=standardization)
         """ 
@@ -131,9 +151,9 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
                     input_data_dict = dict()
                     full_data_path = os.path.join(subdir, file)
                     print('At', full_data_path)
-                    
-                    data = pd.read_csv(full_data_path, sep='\t', index_col=False, header=None)
-                    data.columns = ['frame_id', 'track_id', 'pos_x', 'pos_y'] #in each txt file
+
+                    data = pd.read_csv(full_data_path, sep=' ', index_col=False, header=None)
+                    data.columns = ['frame_id', 'track_id', 'pos_x', 'pos_y', 'pos_z'] #in each txt file
                     data['frame_id'] = pd.to_numeric(data['frame_id'], downcast='integer')
                     data['track_id'] = pd.to_numeric(data['track_id'], downcast='integer')
 
@@ -162,6 +182,8 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
                     # mean standardization
                     data['pos_x'] = data['pos_x'] - data['pos_x'].mean()
                     data['pos_y'] = data['pos_y'] - data['pos_y'].mean()
+                    data['pos_z'] = data['pos_z'] - data['pos_z'].mean()
+                    
 
                     max_timesteps = data['frame_id'].max() # frame id based maximum timesteps
 
@@ -172,32 +194,39 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
                     'frequency_multiplier': 1, 'description': '', 'aug_func': <function augment at 0x7f71d6931a80>, 
                     'non_aug_scene': None}
                     """
+                    
                     for node_id in pd.unique(data['node_id']):
 
                         node_df = data[data['node_id'] == node_id]
 
-                        node_values = node_df[['pos_x', 'pos_y']].values
+                        node_values = node_df[['pos_x', 'pos_y', 'pos_z']].values
 
-                        if node_values.shape[0] < 2:
+                        if node_values.shape[0] < 3:
                             continue
 
                         new_first_idx = node_df['frame_id'].iloc[0]
-
+                        
                         x = node_values[:, 0] # x.shape : (20,)
                         y = node_values[:, 1] # y.shape : (20,)
+                        z = node_values[:, 2]
                         # These derivatives are to find the velocity and acceleration
                         vx = derivative_of(x, scene.dt) #usage of np.derivative and scene.dt = 0.4
                         vy = derivative_of(y, scene.dt)
+                        vz = derivative_of(z, scene.dt)
                         ax = derivative_of(vx, scene.dt)
                         ay = derivative_of(vy, scene.dt)
+                        az = derivative_of(vz, scene.dt)
 
                         data_dict = {('position', 'x'): x,
                                      ('position', 'y'): y,
+                                     ('position', 'z'): z,
                                      ('velocity', 'x'): vx,
                                      ('velocity', 'y'): vy,
+                                     ('velocity', 'z'): vz,
                                      ('acceleration', 'x'): ax,
-                                     ('acceleration', 'y'): ay}
-
+                                     ('acceleration', 'y'): ay,
+                                     ('acceleration', 'z'): az}
+                        
                         node_data = pd.DataFrame(data_dict, columns=data_columns)
                         node = Node(node_type=env.NodeType.PEDESTRIAN, node_id=node_id, data=node_data)
                         """
@@ -210,11 +239,13 @@ for desired_source in ['eth', 'hotel', 'univ', 'zara1', 'zara2']:
                         node.first_timestep = new_first_idx
 
                         scene.nodes.append(node)
+                    
                     if data_class == 'train':
                         scene.augmented = list()
                         angles = np.arange(0, 360, 15) if data_class == 'train' else [0]
-                        for angle in angles:
-                            scene.augmented.append(augment_scene(scene, angle))
+                        axis_combinations = list(itertools.product(angles, angles, angles))
+                        for angles_xyz in axis_combinations:
+                            scene.augmented.append(augment_scene(scene, angles_xyz))
 
                     print(scene)
                     scenes.append(scene)
