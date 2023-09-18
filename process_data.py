@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import dill
 import pickle
-import itertools
+import math
 
 from environment import Environment, Scene, Node, derivative_of
 
@@ -49,27 +49,33 @@ def maybe_makedirs(path_to_create):
         if not os.path.isdir(path_to_create):
             raise
 
-def augment_scene(scene, angles):
+def augment_scene(scene, angle):
     """Scene augmentor using angles
     """
-    def rotate_pc(pc, angles):
-        alpha, beta, gamma = angles
-        alpha = alpha * np.pi / 180
-        beta = beta * np.pi / 180
-        gamma = gamma * np.pi / 180
+    def rotate_pc(pc, alpha):
+        
+         
         #TODO: Need to change the angle only across the y axis (gravity)
         #TODO: Also need to augment translation on x-z plane
-        M = np.array([
-            [np.cos(alpha) * np.cos(beta), np.cos(alpha) * np.sin(beta) * np.sin(gamma) - np.sin(alpha) * np.cos(gamma), np.cos(alpha) * np.sin(beta) * np.cos(gamma) + np.sin(alpha) * np.sin(gamma)],
-            [np.sin(alpha) * np.cos(beta), np.sin(alpha) * np.sin(beta) * np.sin(gamma) + np.cos(alpha) * np.cos(gamma), np.sin(alpha) * np.sin(beta) * np.cos(gamma) - np.cos(alpha) * np.sin(gamma)],
-            [-np.sin(beta), np.cos(beta) * np.sin(gamma), np.cos(beta) * np.cos(gamma)]
+        R = np.array([
+            [np.cos(alpha * np.pi / 180), 0, -np.sin(alpha * np.pi / 180)],
+            [0, 1, 0],
+            [np.sin(alpha * np.pi / 180), 0, np.cos(alpha * np.pi / 180)]
         ])
-        return M @ pc
+        # import pdb; pdb.set_trace()
+        # T = np.array([np.random.uniform(-1.0, 1.0), 0, np.random.uniform(-1.0, 1.0)])
+        # RT = np.eye(4)
+        # RT[:3, :3] = R
+        # MatT = np.eye(4)
+        # MatT[:3, 3] = T
+        #TODO: need to do translation later
+        return R @ pc
 
     data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y', 'z']])
 
     scene_aug = Scene(timesteps=scene.timesteps, dt=scene.dt, name=scene.name)
 
+    alpha = angle *np.pi / 180
     
     for node in scene.nodes:
         x = node.data.position.x.copy()
@@ -77,7 +83,7 @@ def augment_scene(scene, angles):
         z = node.data.position.z.copy()
         
 
-        x, y, z = rotate_pc(np.array([x, y, z]), angles)
+        x, y, z = rotate_pc(np.array([x, y, z]), alpha)
 
         vx = derivative_of(x, scene.dt)
         vy = derivative_of(y, scene.dt)
@@ -247,9 +253,10 @@ for desired_source in ['collide']:
                     if data_class == 'train':
                         scene.augmented = list()
                         angles = np.arange(0, 360, 15) if data_class == 'train' else [0]
-                        axis_combinations = list(itertools.product(angles, angles, angles))
-                        for angles_xyz in axis_combinations:
-                            scene.augmented.append(augment_scene(scene, angles_xyz))
+                        
+                        for angle in angles:
+                            
+                            scene.augmented.append(augment_scene(scene, angle))
 
                     print(scene)
                     scenes.append(scene)
