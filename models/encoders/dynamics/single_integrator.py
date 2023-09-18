@@ -237,6 +237,7 @@ class SingleIntegrator(Dynamic):
         :param x: Not used for SI.
         :return: Position samples
         """
+        
         p_0 = self.initial_conditions['pos'].unsqueeze(1)
         # v = (v * self.dt)
         # for i, p in enumerate(p_0):

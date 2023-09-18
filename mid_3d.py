@@ -65,8 +65,9 @@ class MID_3D():
                         test_batch = batch[0]
                         nodes = batch[1]
                         timesteps_o = batch[2]
-                        traj_pred = self.model.generate(test_batch, node_type, num_points=12, sample=20,bestof=True) # B * 20 * 12 * 2
-
+                        
+                        traj_pred = self.model.generate(test_batch, node_type, num_points=12, sample=20,bestof=True) # B * 20 * 12 * 3
+                        
                         predictions = traj_pred
                         predictions_dict = {}
                         for i, ts in enumerate(timesteps_o):

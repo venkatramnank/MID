@@ -403,15 +403,17 @@ class MultimodalGenerativeCVAE(object):
         initial_dynamics = dict()
 
         batch_size = inputs.shape[0]
-
+       
         #########################################
         # Provide basic information to encoders #
         #########################################
         node_history = inputs
         node_present_state = inputs[:, -1]
-        node_pos = inputs[:, -1, 0:2]
-        node_vel = inputs[:, -1, 2:4]
-
+        # node_pos = inputs[:, -1, 0:2]
+        # node_vel = inputs[:, -1, 2:4]
+        #NOTE: changed values
+        node_pos = inputs[:, -1, 0:3]
+        node_vel = inputs[:, -1, 3:6]
         node_history_st = inputs_st
         node_present_state_st = inputs_st[:, -1]
         node_pos_st = inputs_st[:, -1, 0:2]

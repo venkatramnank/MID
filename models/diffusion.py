@@ -84,7 +84,7 @@ class DiffusionTraj(Module):
         loss = F.mse_loss(e_theta.view(-1, point_dim), e_rand.view(-1, point_dim), reduction='mean') #NOTE: Issue here
         return loss
 
-    def sample(self, num_points, context, sample, bestof, point_dim=2, flexibility=0.0, ret_traj=False, sampling="ddpm", step=100):
+    def sample(self, num_points, context, sample, bestof, point_dim=3, flexibility=0.0, ret_traj=False, sampling="ddpm", step=100):
         traj_list = []
         for i in range(sample):
             batch_size = context.size(0)

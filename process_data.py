@@ -57,6 +57,8 @@ def augment_scene(scene, angles):
         alpha = alpha * np.pi / 180
         beta = beta * np.pi / 180
         gamma = gamma * np.pi / 180
+        #TODO: Need to change the angle only across the y axis (gravity)
+        #TODO: Also need to augment translation on x-z plane
         M = np.array([
             [np.cos(alpha) * np.cos(beta), np.cos(alpha) * np.sin(beta) * np.sin(gamma) - np.sin(alpha) * np.cos(gamma), np.cos(alpha) * np.sin(beta) * np.cos(gamma) + np.sin(alpha) * np.sin(gamma)],
             [np.sin(alpha) * np.cos(beta), np.sin(alpha) * np.sin(beta) * np.sin(gamma) + np.cos(alpha) * np.cos(gamma), np.sin(alpha) * np.sin(beta) * np.cos(gamma) - np.cos(alpha) * np.sin(gamma)],
@@ -126,6 +128,8 @@ maybe_makedirs(data_folder_name) # build data folder
         )
 """
 data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y', 'z']])
+
+#TODO: See the environment representation
 
 # Process ETH-UCY
 for desired_source in ['collide']:
