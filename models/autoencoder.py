@@ -14,9 +14,9 @@ class AutoEncoder(Module):
         self.config = config
         self.encoder = encoder
         self.diffnet = getattr(diffusion, config.diffnet)
-
+        #TODO: Below the value of point_dim is changed from 2 to 3 to accomodate 3D points. Keep in Mind.
         self.diffusion = DiffusionTraj(
-            net = self.diffnet(point_dim=2, context_dim=config.encoder_dim, tf_layer=config.tf_layer, residual=False),
+            net = self.diffnet(point_dim=3, context_dim=config.encoder_dim, tf_layer=config.tf_layer, residual=False), #TODO: Check dimension here
             var_sched = VarianceSchedule(
                 num_steps=100,
                 beta_T=5e-2,
@@ -38,13 +38,14 @@ class AutoEncoder(Module):
         return predicted_y_pos.cpu().detach().numpy()
 
     def get_loss(self, batch, node_type):
+        
         (first_history_index,
          x_t, y_t, x_st_t, y_st_t,
          neighbors_data_st,
          neighbors_edge_value,
          robot_traj_st_t,
          map) = batch
-
+        
         feat_x_encoded = self.encode(batch,node_type) # B * 64
         loss = self.diffusion.get_loss(y_t.cuda(), feat_x_encoded)
         return loss

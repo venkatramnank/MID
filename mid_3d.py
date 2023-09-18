@@ -16,11 +16,12 @@ import pickle
 from dataset import EnvironmentDataset, collate, get_timesteps_data, restore
 from models.autoencoder import AutoEncoder
 from models.trajectron import Trajectron
+from models.trajectron_3d import Trajectron3D
 from utils.model_registrar import ModelRegistrar
-from utils.trajectron_hypers import get_traj_hypers
+from utils.trajectron_hypers import get_traj_hypers, get_traj_hypers_3D
 import evaluation
 
-class MID():
+class MID_3D():
     def __init__(self, config):
         self.config = config
         torch.backends.cudnn.benchmark = True
@@ -228,12 +229,13 @@ class MID():
 
     def _build_encoder_config(self):
         
-        self.hyperparams = get_traj_hypers()
+        self.hyperparams = get_traj_hypers_3D()
         self.hyperparams['enc_rnn_dim_edge'] = self.config.encoder_dim//2
         self.hyperparams['enc_rnn_dim_edge_influence'] = self.config.encoder_dim//2
         self.hyperparams['enc_rnn_dim_history'] = self.config.encoder_dim//2
         self.hyperparams['enc_rnn_dim_future'] = self.config.encoder_dim//2
         # registar
+        # Used for collection of pytorch models, to organize and retrieve
         self.registrar = ModelRegistrar(self.model_dir, "cuda")
 
         if self.config.eval_mode:
@@ -250,7 +252,9 @@ class MID():
             self.eval_env = dill.load(f, encoding='latin1')
 
     def _build_encoder(self):
-        self.encoder = Trajectron(self.registrar, self.hyperparams, "cuda")
+        #TODO: Need to change parts of Trajectron
+        # import pdb; pdb.set_trace()
+        self.encoder = Trajectron3D(self.registrar, self.hyperparams, "cuda")
 
         self.encoder.set_environment(self.train_env)
         self.encoder.set_annealing_params()
@@ -268,12 +272,17 @@ class MID():
         print("> Model built!")
 
     def _build_train_loader(self):
+        
         config = self.config
         self.train_scenes = []
 
         with open(self.train_data_path, 'rb') as f:
             train_env = dill.load(f, encoding='latin1')
-
+        # import pdb; pdb.set_trace()
+        """ 
+        (Pdb) vars(vars(train_env)['scenes'][0]).keys()
+dict_keys(['map', 'timesteps', 'dt', 'name', 'nodes', 'robot', 'temporal_scene_graph', 'frequency_multiplier', 'description', 'aug_func', 'non_aug_scene', 'augmented'])
+        """
         for attention_radius_override in config.override_attention_radius:
             node_type1, node_type2, attention_radius = attention_radius_override.split(' ')
             train_env.attention_radius[(node_type1, node_type2)] = float(attention_radius)
@@ -281,7 +290,7 @@ class MID():
 
         self.train_scenes = self.train_env.scenes
         self.train_scenes_sample_probs = self.train_env.scenes_freq_mult_prop if config.scene_freq_mult_train else None
-
+        #TODO: need to understand the EnvironmentDataset
         self.train_dataset = EnvironmentDataset(train_env,
                                            self.hyperparams['state'],
                                            self.hyperparams['pred_state'],
@@ -300,6 +309,7 @@ class MID():
                                                          shuffle=True,
                                                          num_workers=self.config.preprocess_workers)
             self.train_data_loader[node_type_data_set.node_type] = node_type_dataloader
+           
 
 
     def _build_eval_loader(self):

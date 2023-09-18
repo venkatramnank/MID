@@ -1,4 +1,5 @@
 from mid import MID
+from mid_3d import MID_3D
 import argparse
 import os
 import yaml
@@ -27,9 +28,9 @@ def main():
        config[k] = v
     config["exp_name"] = args.config.split("/")[-1].split(".")[0]
     config["dataset"] = args.dataset
-    #pdb.set_trace()
+    # pdb.set_trace()
     config = EasyDict(config)
-    agent = MID(config)
+    agent = MID_3D(config)
 
     # keyattr = ["lr", "data_dir", "epochs", "dataset", "batch_size","diffnet"]
     # keys = {}
