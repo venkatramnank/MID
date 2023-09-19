@@ -19,6 +19,9 @@ from models.trajectron import Trajectron
 from utils.model_registrar import ModelRegistrar
 from utils.trajectron_hypers import get_traj_hypers
 import evaluation
+from evaluation.visualization import visualize_prediction
+import matplotlib.pyplot as plt
+SAVE_LOCATION = '/home/kalyanav/MS_thesis/MID/results_vis_folder/eth/'
 
 class MID():
     def __init__(self, config):
@@ -157,11 +160,14 @@ class MID():
                                                                        map=None,
                                                                        best_of=True,
                                                                        prune_ph_to_future=True)
-
+           
+                fig, ax = plt.subplots(1)
+                visualize_prediction(ax, predictions_dict, scene.dt, max_hl = max_hl, ph=ph, robot_node=None, map=None)
+                plt.savefig(SAVE_LOCATION + str(i)+'.png')
                 eval_ade_batch_errors = np.hstack((eval_ade_batch_errors, batch_error_dict[node_type]['ade']))
                 eval_fde_batch_errors = np.hstack((eval_fde_batch_errors, batch_error_dict[node_type]['fde']))
-
-
+        
+        
 
         ade = np.mean(eval_ade_batch_errors)
         fde = np.mean(eval_fde_batch_errors)
