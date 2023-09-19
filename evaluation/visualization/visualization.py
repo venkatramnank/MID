@@ -1,4 +1,4 @@
-from utils import prediction_output_to_trajectories
+from evaluation.trajectory_utils import prediction_output_to_trajectories
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
 import numpy as np

@@ -3,7 +3,7 @@ from scipy.interpolate import RectBivariateSpline
 from scipy.ndimage import binary_dilation
 from scipy.stats import gaussian_kde
 from .trajectory_utils import prediction_output_to_trajectories
-#import visualization
+import evaluation.visualization
 from matplotlib import pyplot as plt
 import pdb
 
@@ -105,31 +105,31 @@ def compute_batch_statistics(prediction_output_dict,
     return batch_error_dict
 
 
-# def log_batch_errors(batch_errors_list, log_writer, namespace, curr_iter, bar_plot=[], box_plot=[]):
-#     for node_type in batch_errors_list[0].keys():
-#         for metric in batch_errors_list[0][node_type].keys():
-#             metric_batch_error = []
-#             for batch_errors in batch_errors_list:
-#                 metric_batch_error.extend(batch_errors[node_type][metric])
+def log_batch_errors(batch_errors_list, log_writer, namespace, curr_iter, bar_plot=[], box_plot=[]):
+    for node_type in batch_errors_list[0].keys():
+        for metric in batch_errors_list[0][node_type].keys():
+            metric_batch_error = []
+            for batch_errors in batch_errors_list:
+                metric_batch_error.extend(batch_errors[node_type][metric])
 
-#             if len(metric_batch_error) > 0:
-#                 log_writer.add_histogram(f"{node_type.name}/{namespace}/{metric}", metric_batch_error, curr_iter)
-#                 log_writer.add_scalar(f"{node_type.name}/{namespace}/{metric}_mean", np.mean(metric_batch_error), curr_iter)
-#                 log_writer.add_scalar(f"{node_type.name}/{namespace}/{metric}_median", np.median(metric_batch_error), curr_iter)
+            if len(metric_batch_error) > 0:
+                log_writer.add_histogram(f"{node_type.name}/{namespace}/{metric}", metric_batch_error, curr_iter)
+                log_writer.add_scalar(f"{node_type.name}/{namespace}/{metric}_mean", np.mean(metric_batch_error), curr_iter)
+                log_writer.add_scalar(f"{node_type.name}/{namespace}/{metric}_median", np.median(metric_batch_error), curr_iter)
 
-#                 if metric in bar_plot:
-#                     pd = {'dataset': [namespace] * len(metric_batch_error),
-#                                   metric: metric_batch_error}
-#                     kde_barplot_fig, ax = plt.subplots(figsize=(5, 5))
-#                     visualization.visualization_utils.plot_barplots(ax, pd, 'dataset', metric)
-#                     log_writer.add_figure(f"{node_type.name}/{namespace}/{metric}_bar_plot", kde_barplot_fig, curr_iter)
+                if metric in bar_plot:
+                    pd = {'dataset': [namespace] * len(metric_batch_error),
+                                  metric: metric_batch_error}
+                    kde_barplot_fig, ax = plt.subplots(figsize=(5, 5))
+                    visualization.visualization_utils.plot_barplots(ax, pd, 'dataset', metric)
+                    log_writer.add_figure(f"{node_type.name}/{namespace}/{metric}_bar_plot", kde_barplot_fig, curr_iter)
 
-#                 if metric in box_plot:
-#                     mse_fde_pd = {'dataset': [namespace] * len(metric_batch_error),
-#                                   metric: metric_batch_error}
-#                     fig, ax = plt.subplots(figsize=(5, 5))
-#                     visualization.visualization_utils.plot_boxplots(ax, mse_fde_pd, 'dataset', metric)
-#                     log_writer.add_figure(f"{node_type.name}/{namespace}/{metric}_box_plot", fig, curr_iter)
+                if metric in box_plot:
+                    mse_fde_pd = {'dataset': [namespace] * len(metric_batch_error),
+                                  metric: metric_batch_error}
+                    fig, ax = plt.subplots(figsize=(5, 5))
+                    visualization.visualization_utils.plot_boxplots(ax, mse_fde_pd, 'dataset', metric)
+                    log_writer.add_figure(f"{node_type.name}/{namespace}/{metric}_box_plot", fig, curr_iter)
 
 
 def print_batch_errors(batch_errors_list, namespace, curr_iter):

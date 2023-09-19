@@ -161,9 +161,9 @@ class MID():
                                                                        best_of=True,
                                                                        prune_ph_to_future=True)
            
-                fig, ax = plt.subplots(1)
-                visualize_prediction(ax, predictions_dict, scene.dt, max_hl = max_hl, ph=ph, robot_node=None, map=None)
-                plt.savefig(SAVE_LOCATION + str(i)+'.png')
+                # fig, ax = plt.subplots(1)
+                # visualize_prediction(ax, predictions_dict, scene.dt, max_hl = max_hl, ph=ph, robot_node=None, map=None)
+                # plt.savefig(SAVE_LOCATION + str(i)+'.png')
                 eval_ade_batch_errors = np.hstack((eval_ade_batch_errors, batch_error_dict[node_type]['ade']))
                 eval_fde_batch_errors = np.hstack((eval_fde_batch_errors, batch_error_dict[node_type]['fde']))
         
