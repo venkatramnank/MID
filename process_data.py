@@ -138,7 +138,7 @@ data_columns = pd.MultiIndex.from_product([['position', 'velocity', 'acceleratio
 #TODO: See the environment representation
 
 # Process ETH-UCY
-for desired_source in ['collide']:
+for desired_source in ['drop']:
     for data_class in ['train', 'val', 'test']:
         env = Environment(node_type_list=['PEDESTRIAN'], standardization=standardization)
         """ 
