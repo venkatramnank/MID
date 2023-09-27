@@ -52,7 +52,7 @@ def get_relative_robot_traj(env, state, node_traj, robot_traj, node_type, robot_
     # TODO: We will have to make this more generic if robot_type != node_type
     # Make Robot State relative to node
     _, std = env.get_standardize_params(state[robot_type], node_type=robot_type)
-    std[0:2] = env.attention_radius[(node_type, robot_type)]
+    std[0:3] = env.attention_radius[(node_type, robot_type)]
     robot_traj_st = env.standardize(robot_traj,
                                     state[robot_type],
                                     node_type=robot_type,
@@ -87,26 +87,27 @@ def get_node_timestep_data(env, scene, t, node, state, pred_state,
     # Node
     timestep_range_x = np.array([t - max_ht, t])
     timestep_range_y = np.array([t + 1, t + max_ft])
-
+    # import pdb; pdb.set_trace()
     x = node.get(timestep_range_x, state[node.type])
     y = node.get(timestep_range_y, pred_state[node.type])
     first_history_index = (max_ht - node.history_points_at(t)).clip(0)
 
     _, std = env.get_standardize_params(state[node.type], node.type)
-    std[0:2] = env.attention_radius[(node.type, node.type)]
+    std[0:3] = env.attention_radius[(node.type, node.type)]
     rel_state = np.zeros_like(x[0])
-    rel_state[0:2] = np.array(x)[-1, 0:2]
+    rel_state[0:3] = np.array(x)[-1, 0:3]
     x_st = env.standardize(x, state[node.type], node.type, mean=rel_state, std=std)
     if list(pred_state[node.type].keys())[0] == 'position':  # If we predict position we do it relative to current pos
-        y_st = env.standardize(y, pred_state[node.type], node.type, mean=rel_state[0:2])
+        y_st = env.standardize(y, pred_state[node.type], node.type, mean=rel_state[0:3])
     else:
         y_st = env.standardize(y, pred_state[node.type], node.type)
 
+    
     x_t = torch.tensor(x, dtype=torch.float)
     y_t = torch.tensor(y, dtype=torch.float)
     x_st_t = torch.tensor(x_st, dtype=torch.float)
     y_st_t = torch.tensor(y_st, dtype=torch.float)
-
+    
     # Neighbors
     neighbors_data_st = None
     neighbors_edge_value = None
@@ -136,7 +137,7 @@ def get_node_timestep_data(env, scene, t, node, state, pred_state,
 
                 # Make State relative to node where neighbor and node have same state
                 _, std = env.get_standardize_params(state[connected_node.type], node_type=connected_node.type)
-                std[0:2] = env.attention_radius[edge_type]
+                std[0:3] = env.attention_radius[edge_type]
                 equal_dims = np.min((neighbor_state_np.shape[-1], x.shape[-1]))
                 rel_state = np.zeros_like(neighbor_state_np)
                 rel_state[:, ..., :equal_dims] = x[-1, ..., :equal_dims]
@@ -181,12 +182,12 @@ def get_node_timestep_data(env, scene, t, node, state, pred_state,
                 heading_angle = None
 
             scene_map = scene.map[node.type]
-            map_point = x[-1, :2]
+            map_point = x[-1, :3]
 
 
             patch_size = hyperparams['map_encoder'][node.type]['patch_size']
             map_tuple = (scene_map, map_point, heading_angle, patch_size)
-
+    
     return (first_history_index, x_t, y_t, x_st_t, y_st_t, neighbors_data_st,
             neighbors_edge_value, robot_traj_st_t, map_tuple)
 
@@ -213,6 +214,7 @@ def get_timesteps_data(env, scene, t, node_type, state, pred_state,
                                        min_history_timesteps=min_ht,
                                        min_future_timesteps=max_ft,
                                        return_robot=not hyperparams['incl_robot_node'])
+    
     batch = list()
     nodes = list()
     out_timesteps = list()

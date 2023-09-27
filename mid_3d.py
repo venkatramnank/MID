@@ -133,6 +133,7 @@ class MID_3D():
 
         for i, scene in enumerate(self.eval_scenes):
             print(f"----- Evaluating Scene {i + 1}/{len(self.eval_scenes)}")
+            # import pdb; pdb.set_trace()
             for t in tqdm(range(0, scene.timesteps, 10)):
                 timesteps = np.arange(t, t+10)
                 batch = get_timesteps_data(env=self.eval_env, scene=scene, t=timesteps, node_type=node_type, state=self.hyperparams['state'],

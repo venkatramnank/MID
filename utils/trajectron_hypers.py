@@ -100,7 +100,7 @@ def get_traj_hypers_3D():
     'map_encoder':
         {'PEDESTRIAN':
             {'heading_state_index': 6,
-             'patch_size': [50, 10, 50, 90], # TODO: need to confirm with Dr Chanho
+             'patch_size': [50, 10, 50, 90], 
              'map_channels': 3,
              'hidden_channels': [10, 20, 10, 1],
              'output_size': 32,
@@ -152,7 +152,7 @@ def get_traj_hypers_3D():
              'acceleration': ['x', 'y', 'z']
             }
         },
-    'pred_state': {'PEDESTRIAN': {'velocity': ['x', 'y', 'z']}},
+    'pred_state': {'PEDESTRIAN': {'velocity': ['x', 'y', 'z']}}, # originally velocity
     'log_histograms': False,
     'dynamic_edges': 'yes',
     'edge_state_combine_method': 'sum',

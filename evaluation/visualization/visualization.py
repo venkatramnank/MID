@@ -94,63 +94,61 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting functionality
 import numpy as np
 
-# def plot_3d_trajectories(
-#                           prediction_dict,
-#                           histories_dict,
-#                           futures_dict,
-#                           line_alpha=0.7,
-#                           line_width=0.2,
-#                           edge_width=2,
-#                           node_sphere_radius=0.3,
-#                           batch_num=0,
-#                           kde=False):
+def plot_3d_trajectories(ax,
+                          prediction_dict,
+                          histories_dict,
+                          futures_dict,
+                          line_alpha=0.7,
+                          line_width=0.2,
+                          edge_width=2,
+                          node_sphere_radius=0.3,
+                          batch_num=0,
+                          kde=False):
     
-#     cmap = ['k', 'b', 'y', 'g', 'r']
-#     #TODO(venkat) : fix the history issue
+    cmap = ['k', 'b', 'y', 'g', 'r']
+    #TODO(venkat) : fix the history issue
     
-#     for node in histories_dict:
+    for node in histories_dict:
         
-#         history = histories_dict[node]
-#         future = futures_dict[node]
-#         predictions = prediction_dict[node]
+        history = histories_dict[node]
+        future = futures_dict[node]
+        predictions = prediction_dict[node]
 
-#         if np.isnan(history[-1]).any():
-#             continue
+        if np.isnan(history[-1]).any():
+            continue
         
-#         fig = plt.figure()
-#         ax = fig.add_subplot(111, projection='3d')
+        
+        ax.plot(history[:, 0], history[:, 1], history[:, 2], 'k--')
 
-#         ax.plot(history[:, 0], history[:, 1], history[:, 2], 'k--')
+        for sample_num in range(prediction_dict[node].shape[1]):
 
-#         for sample_num in range(prediction_dict[node].shape[1]):
+            if kde and predictions.shape[1] >= 50:
+                line_alpha = 0.2
+                for t in range(predictions.shape[2]):
+                    # Replace this with a 3D KDE plot if needed
+                    ax.scatter(predictions[batch_num, :, t, 0], predictions[batch_num, :, t, 1], predictions[batch_num, :, t, 2],
+                                c=np.random.choice(cmap), alpha=0.8)
 
-#             if kde and predictions.shape[1] >= 50:
-#                 line_alpha = 0.2
-#                 for t in range(predictions.shape[2]):
-#                     # Replace this with a 3D KDE plot if needed
-#                     ax.scatter(predictions[batch_num, :, t, 0], predictions[batch_num, :, t, 1], predictions[batch_num, :, t, 2],
-#                                 c=np.random.choice(cmap), alpha=0.8)
+            ax.plot(predictions[batch_num, sample_num, :, 0], predictions[batch_num, sample_num, :, 1], predictions[batch_num, sample_num, :, 2],
+                    color=cmap[node.type.value],
+                    linewidth=line_width, alpha=line_alpha)
 
-#             ax.plot(predictions[batch_num, sample_num, :, 0], predictions[batch_num, sample_num, :, 1], predictions[batch_num, sample_num, :, 2],
-#                     color=cmap[node.type.value],
-#                     linewidth=line_width, alpha=line_alpha)
+            ax.plot(future[:, 0],
+                    future[:, 1],
+                    future[:, 2],
+                    'm--')
 
-#             ax.plot(future[:, 0],
-#                     future[:, 1],
-#                     future[:, 2],
-#                     'm--')
+            # Current Node Position
+            ax.scatter(history[-1, 0], history[-1, 1], history[-1, 2],
+                        c='g', s=node_sphere_radius * 100, edgecolors='k', linewidth=1, alpha=1.0)
 
-#             # Current Node Position
-#             ax.scatter(history[-1, 0], history[-1, 1], history[-1, 2],
-#                         c='g', s=node_sphere_radius * 100, edgecolors='k', linewidth=1, alpha=1.0)
-
-#     ax.set_xlabel('X')
-#     ax.set_ylabel('Y')
-#     ax.set_zlabel('Z')
-#     ax.set_aspect('auto')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_aspect('auto')
 
 
-def plot_3d_trajectories(
+def plot_3d_trajectories_sep_plots(
                           prediction_dict,
                           histories_dict,
                           futures_dict,
@@ -226,25 +224,25 @@ def visualize_3d_prediction(prediction_output_dict,
     # assert(len(prediction_dict.keys()) <= 1)
     if len(prediction_dict.keys()) == 0:
         return
-    #TODO: Fix and understand the ouptu properly
+    #TODO: Fix and understand the output properly
     
-    
-    
-        
-    ts_key = list(prediction_dict.keys())[-1]
+    # import pdb; pdb.set_trace()
+    ts_key = list(prediction_dict.keys())[0]
         
     prediction_dict_curr = prediction_dict[ts_key]
     histories_dict_curr = histories_dict[ts_key]
     futures_dict_curr = futures_dict[ts_key]
 
       # Create a 3D subplot
-    
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
     
 
     # if map is not None:
     #     # You may need to adjust this based on your map data
     #     ax.scatter(map[:, 0], map[:, 1], map[:, 2], c='gray', marker='.')
 
-    plot_3d_trajectories(prediction_dict_curr, histories_dict_curr, futures_dict_curr, *kwargs)
+    plot_3d_trajectories(ax, prediction_dict_curr, histories_dict_curr, futures_dict_curr, *kwargs)
     plt.tight_layout()
     plt.show()

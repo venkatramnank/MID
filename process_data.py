@@ -23,9 +23,9 @@ standardization = {
             'z' : {'mean': 0, 'std': 1}
         },
         'velocity': {
-            'x': {'mean': 0, 'std': 2},
-            'y': {'mean': 0, 'std': 2},
-            'z' : {'mean' : 0, 'std': 2}
+            'x': {'mean': 0, 'std': 1},
+            'y': {'mean': 0, 'std': 1},
+            'z' : {'mean' : 0, 'std': 1}
         },
         'acceleration': {
             'x': {'mean': 0, 'std': 1},
@@ -161,13 +161,13 @@ for desired_source in ['collide']:
                     input_data_dict = dict()
                     full_data_path = os.path.join(subdir, file)
                     print('At', full_data_path)
-
+                    
                     data = pd.read_csv(full_data_path, sep=' ', index_col=False, header=None)
                     data.columns = ['frame_id', 'track_id', 'pos_x', 'pos_y', 'pos_z'] #in each txt file
                     data['frame_id'] = pd.to_numeric(data['frame_id'], downcast='integer')
                     data['track_id'] = pd.to_numeric(data['track_id'], downcast='integer')
 
-                    data['frame_id'] = data['frame_id'] // 10
+                    data['frame_id'] = data['frame_id'] 
 
                     data['frame_id'] -= data['frame_id'].min()
 
@@ -190,9 +190,10 @@ for desired_source in ['collide']:
                         #data = pd.concat([data, data_gauss])
 
                     # mean standardization
-                    data['pos_x'] = data['pos_x'] - data['pos_x'].mean()
-                    data['pos_y'] = data['pos_y'] - data['pos_y'].mean()
-                    data['pos_z'] = data['pos_z'] - data['pos_z'].mean()
+                    
+                    # data['pos_x'] = data['pos_x'] - data['pos_x'].mean()
+                    # data['pos_y'] = data['pos_y'] - data['pos_y'].mean()
+                    # data['pos_z'] = data['pos_z'] - data['pos_z'].mean()
                     
 
                     max_timesteps = data['frame_id'].max() # frame id based maximum timesteps

@@ -27,13 +27,14 @@ class Environment(object):
 
         standardize_mean_list = list()
         standardize_std_list = list()
+        
         for entity, dims in state.items():
             for dim in dims:
                 standardize_mean_list.append(self.standardization[node_type][entity][dim]['mean'])
                 standardize_std_list.append(self.standardization[node_type][entity][dim]['std'])
         standardize_mean = np.stack(standardize_mean_list)
         standardize_std = np.stack(standardize_std_list)
-
+        
         self.standardize_param_memo[memo_key] = (standardize_mean, standardize_std)
         return standardize_mean, standardize_std
 
@@ -44,6 +45,7 @@ class Environment(object):
             mean, _ = self.get_standardize_params(state, node_type)
         elif mean is not None and std is None:
             _, std = self.get_standardize_params(state, node_type)
+        
         return np.where(np.isnan(array), np.array(np.nan), (array - mean) / std)
 
     def unstandardize(self, array, state, node_type, mean=None, std=None):
