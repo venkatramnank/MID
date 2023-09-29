@@ -2,7 +2,7 @@
 # optimizer
 lr: 0.001
 # dataset
-data_dir: processed_data_noise
+data_dir: processed_data
   # the path with the directory with XXX.pkl
 # Training Prarmeters:
 diffnet: TransformerConcatLinear #TransformerConcatLinear
@@ -15,10 +15,10 @@ k_eval: 25
 seed: 123
 eval_every: 30
 # Testing
-eval_at: 70
-eval_mode: False
+eval_at: 90
+eval_mode: True
 # set to "ddim" to enable fast sampling
-sampling: ddpm
+sampling: ddim
 ############### Trajectron++ Config #################
 # misc
 conf: None

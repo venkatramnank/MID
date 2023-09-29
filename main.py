@@ -1,4 +1,5 @@
 from mid import MID
+from mid_3d import MID_3D
 import argparse
 import os
 import yaml
@@ -26,10 +27,10 @@ def main():
     for k, v in vars(args).items():
        config[k] = v
     config["exp_name"] = args.config.split("/")[-1].split(".")[0]
-    config["dataset"] = args.dataset[:-1]
-    #pdb.set_trace()
+    config["dataset"] = args.dataset
+    # pdb.set_trace()
     config = EasyDict(config)
-    agent = MID(config)
+    agent = MID_3D(config)
 
     # keyattr = ["lr", "data_dir", "epochs", "dataset", "batch_size","diffnet"]
     # keys = {}
@@ -43,7 +44,7 @@ def main():
     steps = 5
 
     if config["eval_mode"]:
-        agent.eval(sampling, 100//step)
+        agent.eval(sampling, 100//steps)
     else:
         agent.train()
 

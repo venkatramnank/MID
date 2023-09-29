@@ -21,8 +21,9 @@ def prediction_output_to_trajectories(prediction_output_dict,
         prediction_nodes = prediction_output_dict[t].keys()
         for node in prediction_nodes:
             predictions_output = prediction_output_dict[t][node]
-            position_state = {'position': ['x', 'y']}
-
+           
+            position_state = {'position': ['x', 'y', 'z']} #TODO: Is this value standardized?
+            # 
             history = node.get(np.array([t - max_h, t]), position_state)  # History includes current pos
             history = history[~np.isnan(history.sum(axis=1))]
             #pdb.set_trace()

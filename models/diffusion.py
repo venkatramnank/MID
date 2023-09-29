@@ -65,7 +65,7 @@ class DiffusionTraj(Module):
         self.var_sched = var_sched
 
     def get_loss(self, x_0, context, t=None):
-
+        
         batch_size, _, point_dim = x_0.size()
         if t == None:
             t = self.var_sched.uniform_sample_t(batch_size)
@@ -79,11 +79,12 @@ class DiffusionTraj(Module):
         e_rand = torch.randn_like(x_0).cuda()  # (B, N, d)
 
 
-        e_theta = self.net(c0 * x_0 + c1 * e_rand, beta=beta, context=context)
-        loss = F.mse_loss(e_theta.view(-1, point_dim), e_rand.view(-1, point_dim), reduction='mean')
+        e_theta = self.net(c0 * x_0 + c1 * e_rand, beta=beta, context=context) #TODO: in model the output features need to be changed
+    
+        loss = F.mse_loss(e_theta.view(-1, point_dim), e_rand.view(-1, point_dim), reduction='mean') #NOTE: Issue here
         return loss
 
-    def sample(self, num_points, context, sample, bestof, point_dim=2, flexibility=0.0, ret_traj=False, sampling="ddpm", step=100):
+    def sample(self, num_points, context, sample, bestof, point_dim=3, flexibility=0.0, ret_traj=False, sampling="ddpm", step=100):
         traj_list = []
         for i in range(sample):
             batch_size = context.size(0)
@@ -175,12 +176,12 @@ class TransformerConcatLinear(Module):
         super().__init__()
         self.residual = residual
         self.pos_emb = PositionalEncoding(d_model=2*context_dim, dropout=0.1, max_len=24)
-        self.concat1 = ConcatSquashLinear(2,2*context_dim,context_dim+3)
+        self.concat1 = ConcatSquashLinear(3,2*context_dim,context_dim+3) #TODO: Changed dim here as well from 2 to 3
         self.layer = nn.TransformerEncoderLayer(d_model=2*context_dim, nhead=4, dim_feedforward=4*context_dim)
         self.transformer_encoder = nn.TransformerEncoder(self.layer, num_layers=tf_layer)
         self.concat3 = ConcatSquashLinear(2*context_dim,context_dim,context_dim+3)
         self.concat4 = ConcatSquashLinear(context_dim,context_dim//2,context_dim+3)
-        self.linear = ConcatSquashLinear(context_dim//2, 2, context_dim+3)
+        self.linear = ConcatSquashLinear(context_dim//2, 3, context_dim+3) #NOTE: changed 1th dim from 2 to 3
         #self.linear = nn.Linear(128,2)
 
 
@@ -188,14 +189,15 @@ class TransformerConcatLinear(Module):
         batch_size = x.size(0)
         beta = beta.view(batch_size, 1, 1)          # (B, 1, 1)
         context = context.view(batch_size, 1, -1)   # (B, 1, F)
-
+        
         time_emb = torch.cat([beta, torch.sin(beta), torch.cos(beta)], dim=-1)  # (B, 1, 3)
         ctx_emb = torch.cat([time_emb, context], dim=-1)    # (B, 1, F+3)
+
         x = self.concat1(ctx_emb,x)
         final_emb = x.permute(1,0,2)
         final_emb = self.pos_emb(final_emb)
 
-
+        
         trans = self.transformer_encoder(final_emb).permute(1,0,2)
         trans = self.concat3(ctx_emb, trans)
         trans = self.concat4(ctx_emb, trans)

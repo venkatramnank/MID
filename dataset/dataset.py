@@ -5,6 +5,7 @@ from .preprocessing import get_node_timestep_data
 
 class EnvironmentDataset(object):
     def __init__(self, env, state, pred_state, node_freq_mult, scene_freq_mult, hyperparams, **kwargs):
+        
         self.env = env
         self.state = state
         self.pred_state = pred_state
@@ -66,6 +67,7 @@ class NodeTypeDataset(data.Dataset):
         return self.len
 
     def __getitem__(self, i):
+        
         (scene, t, node) = self.index[i]
 
         if self.augment:
