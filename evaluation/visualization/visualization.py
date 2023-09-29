@@ -207,7 +207,7 @@ def plot_3d_trajectories_sep_plots(
     fig.suptitle('3D Trajectories')
     fig.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust subplot layout
 
-def visualize_3d_prediction(prediction_output_dict,
+def visualize_3d_prediction(i, scene_path, prediction_output_dict,
                             dt,
                             max_hl,
                             ph,
@@ -236,8 +236,8 @@ def visualize_3d_prediction(prediction_output_dict,
       # Create a 3D subplot
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-
-    
+    # ax = Axes3D(fig)
+    ax.view_init(azim=-90, elev=135)
 
     # if map is not None:
     #     # You may need to adjust this based on your map data
@@ -245,4 +245,6 @@ def visualize_3d_prediction(prediction_output_dict,
 
     plot_3d_trajectories(ax, prediction_dict_curr, histories_dict_curr, futures_dict_curr, *kwargs)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(scene_path + str(i) + '.png')
+    # plt.show()
+    plt.close()

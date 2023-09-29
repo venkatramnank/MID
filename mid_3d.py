@@ -134,8 +134,8 @@ class MID_3D():
         for i, scene in enumerate(self.eval_scenes):
             print(f"----- Evaluating Scene {i + 1}/{len(self.eval_scenes)}")
             # import pdb; pdb.set_trace()
-            for t in tqdm(range(0, scene.timesteps, 10)):
-                timesteps = np.arange(t, t+10)
+            for t in tqdm(range(0, scene.timesteps, 1)):
+                timesteps = np.arange(t, t+1)
                 batch = get_timesteps_data(env=self.eval_env, scene=scene, t=timesteps, node_type=node_type, state=self.hyperparams['state'],
                                            pred_state=self.hyperparams['pred_state'], edge_types=self.eval_env.get_edge_types(
                 ),
@@ -171,9 +171,10 @@ class MID_3D():
                     (eval_ade_batch_errors, batch_error_dict[node_type]['ade']))
                 eval_fde_batch_errors = np.hstack(
                     (eval_fde_batch_errors, batch_error_dict[node_type]['fde']))
-
-                visualize_3d_prediction(
+                scene_path = '/home/kalyanav/MS_thesis/MID_trained_models/Visualizations/pilot_it2_collision_assorted_targets_box_2_dis_2_occ_0045/'
+                visualize_3d_prediction(t, scene_path, 
                     predictions_dict, scene.dt, max_hl=max_hl, ph=ph, robot_node=None, map=None)
+                
 
         ade = np.mean(eval_ade_batch_errors)
         fde = np.mean(eval_fde_batch_errors)
