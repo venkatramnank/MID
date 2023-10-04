@@ -130,9 +130,9 @@ class MID_3D():
         eval_fde_batch_errors = []
         ph = self.hyperparams['prediction_horizon']
         max_hl = self.hyperparams['maximum_history_length']
-
-        for i, scene in enumerate(self.eval_scenes):
-            print(f"----- Evaluating Scene {i + 1}/{len(self.eval_scenes)}")
+        
+        for index, scene in enumerate(self.eval_scenes):
+            print(f"----- Evaluating Scene {index + 1}/{len(self.eval_scenes)}")
             # import pdb; pdb.set_trace()
             for t in tqdm(range(0, scene.timesteps, 1)):
                 timesteps = np.arange(t, t+1)
@@ -171,8 +171,8 @@ class MID_3D():
                     (eval_ade_batch_errors, batch_error_dict[node_type]['ade']))
                 eval_fde_batch_errors = np.hstack(
                     (eval_fde_batch_errors, batch_error_dict[node_type]['fde']))
-                scene_path = '/home/kalyanav/MS_thesis/MID_trained_models/Visualizations/pilot_it2_collision_assorted_targets_box_2_dis_2_occ_0045/'
-                visualize_3d_prediction(t, scene_path, 
+                scene_path = '/home/kalyanav/MS_thesis/MID_trained_models/Visualizations/results_oct_2_run/'
+                visualize_3d_prediction(index, t, scene_path, 
                     predictions_dict, scene.dt, max_hl=max_hl, ph=ph, robot_node=None, map=None)
                 
 
@@ -363,7 +363,7 @@ dict_keys(['map', 'timesteps', 'dt', 'name', 'nodes', 'robot', 'temporal_scene_g
                                                              collate_fn=collate,
                                                              pin_memory=True,
                                                              batch_size=config.eval_batch_size,
-                                                             shuffle=True,
+                                                             shuffle=False,
                                                              num_workers=config.preprocess_workers)
                 self.eval_data_loader[node_type_data_set.node_type] = node_type_dataloader
 
