@@ -92,7 +92,7 @@ def get_node_timestep_data(env, scene, t, node, state, pred_state,
     # Node
     timestep_range_x = np.array([t - max_ht, t])
     timestep_range_y = np.array([t + 1, t + max_ft])
-
+    
     x = node.get(timestep_range_x, state[node.type])
     y = node.get(timestep_range_y, pred_state[node.type])
     first_history_index = (max_ht - node.history_points_at(t)).clip(0)
@@ -218,6 +218,7 @@ def get_timesteps_data(env, scene, t, node_type, state, pred_state,
                                        min_history_timesteps=min_ht,
                                        min_future_timesteps=max_ft,
                                        return_robot=not hyperparams['incl_robot_node'])
+   
     batch = list()
     nodes = list()
     out_timesteps = list()
@@ -305,7 +306,7 @@ class Trajectron3D(object):
          neighbors_edge_value,
          robot_traj_st_t,
          map) = batch
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         x = x_t.to(self.device)
         y = y_t.to(self.device)
         x_st_t = x_st_t.to(self.device)
@@ -438,6 +439,7 @@ class Trajectron3D(object):
                 map = map.to(self.device)
 
             # Run forward pass
+            # import pdb; pdb.set_trace()
             predictions = model.predict(inputs=x,
                                         inputs_st=x_st_t,
                                         first_history_indices=first_history_index,
