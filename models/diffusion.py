@@ -78,13 +78,13 @@ class DiffusionTraj(Module):
 
         e_rand = torch.randn_like(x_0).cuda()  # (B, N, d)
 
-
         e_theta = self.net(c0 * x_0 + c1 * e_rand, beta=beta, context=context) #TODO: in model the output features need to be changed
     
         loss = F.mse_loss(e_theta.view(-1, point_dim), e_rand.view(-1, point_dim), reduction='mean') #NOTE: Issue here
         return loss
 
     def sample(self, num_points, context, sample, bestof, point_dim=3, flexibility=0.0, ret_traj=False, sampling="ddpm", step=100):
+        
         traj_list = []
         for i in range(sample):
             batch_size = context.size(0)
@@ -100,12 +100,12 @@ class DiffusionTraj(Module):
                 alpha = self.var_sched.alphas[t]
                 alpha_bar = self.var_sched.alpha_bars[t]
                 alpha_bar_next = self.var_sched.alpha_bars[t-stride]
-                #pdb.set_trace()
+                
                 sigma = self.var_sched.get_sigmas(t, flexibility)
 
                 c0 = 1.0 / torch.sqrt(alpha)
                 c1 = (1 - alpha) / torch.sqrt(1 - alpha_bar)
-
+               
                 x_t = traj[t]
                 beta = self.var_sched.betas[[t]*batch_size]
                 e_theta = self.net(x_t, beta=beta, context=context)
@@ -181,7 +181,7 @@ class TransformerConcatLinear(Module):
         self.transformer_encoder = nn.TransformerEncoder(self.layer, num_layers=tf_layer)
         self.concat3 = ConcatSquashLinear(2*context_dim,context_dim,context_dim+3)
         self.concat4 = ConcatSquashLinear(context_dim,context_dim//2,context_dim+3)
-        self.linear = ConcatSquashLinear(context_dim//2, 3, context_dim+3) #NOTE: changed 1th dim from 2 to 3
+        self.linear = ConcatSquashLinear(context_dim//2,3, context_dim+3) #NOTE: changed 1th dim from 2 to 3
         #self.linear = nn.Linear(128,2)
 
 

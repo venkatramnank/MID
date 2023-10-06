@@ -243,6 +243,7 @@ class Trajectron3D(object):
     def __init__(self, model_registrar,
                  hyperparams,
                  device):
+        
         super(Trajectron3D, self).__init__()
         self.hyperparams = hyperparams
         #self.log_writer = log_writer
@@ -265,6 +266,7 @@ class Trajectron3D(object):
                 np.sum([len(entity_dims) for entity_dims in self.state[state_type].values()])
             )
         self.pred_state = self.hyperparams['pred_state']
+        
 
     def set_environment(self, env):
         self.env = env
@@ -283,6 +285,7 @@ class Trajectron3D(object):
                                                                             edge_types
                                                                             )
 
+        
     def set_curr_iter(self, curr_iter):
         self.curr_iter = curr_iter
         for node_str, model in self.node_models_dict.items():
@@ -306,7 +309,7 @@ class Trajectron3D(object):
          neighbors_edge_value,
          robot_traj_st_t,
          map) = batch
-        # import pdb; pdb.set_trace()
+        
         x = x_t.to(self.device)
         y = y_t.to(self.device)
         x_st_t = x_st_t.to(self.device)
@@ -337,7 +340,7 @@ class Trajectron3D(object):
          neighbors_edge_value,
          robot_traj_st_t,
          map) = batch
-
+        import pdb; pdb.set_trace()
         x = x_t.to(self.device)
         y = y_t.to(self.device)
         x_st_t = x_st_t.to(self.device)

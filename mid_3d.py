@@ -46,6 +46,7 @@ class MID_3D():
             self.train_dataset.augment = False
             if epoch % self.config.eval_every == 0:
                 self.model.eval()
+                
 
                 node_type = "PEDESTRIAN"
                 eval_ade_batch_errors = []
@@ -190,8 +191,8 @@ class MID_3D():
         # self.log.info(f"Best of 20: Epoch {epoch} ADE: {ade} FDE: {fde}")
 
     def _build(self):
+        
         self._build_dir()
-
         self._build_encoder_config()
         self._build_encoder()
         self._build_model()
@@ -242,7 +243,7 @@ class MID_3D():
         print("> Optimizer built!")
 
     def _build_encoder_config(self):
-
+        
         self.hyperparams = get_traj_hypers_3D()
         self.hyperparams['enc_rnn_dim_edge'] = self.config.encoder_dim//2
         self.hyperparams['enc_rnn_dim_edge_influence'] = self.config.encoder_dim//2
@@ -265,21 +266,23 @@ class MID_3D():
             self.train_env = dill.load(f, encoding='latin1')
         with open(self.eval_data_path, 'rb') as f:
             self.eval_env = dill.load(f, encoding='latin1')
+        print('> Encoder config built!')
 
     def _build_encoder(self):
-        # TODO: Need to change parts of Trajectron
-        # import pdb; pdb.set_trace()
+        
+        
         self.encoder = Trajectron3D(self.registrar, self.hyperparams, "cuda")
 
         self.encoder.set_environment(self.train_env)
         self.encoder.set_annealing_params()
-
+        print('> Encoder Built!')
     def _build_model(self):
         """ Define Model """
         config = self.config
         model = AutoEncoder(config, encoder=self.encoder)
 
         self.model = model.cuda()
+        
         if self.config.eval_mode:
             self.model.load_state_dict(self.checkpoint['ddpm'])
 
@@ -292,7 +295,7 @@ class MID_3D():
 
         with open(self.train_data_path, 'rb') as f:
             train_env = dill.load(f, encoding='latin1')
-        # import pdb; pdb.set_trace()
+            
         """ 
         (Pdb) vars(vars(train_env)['scenes'][0]).keys()
 dict_keys(['map', 'timesteps', 'dt', 'name', 'nodes', 'robot', 'temporal_scene_graph', 'frequency_multiplier', 'description', 'aug_func', 'non_aug_scene', 'augmented'])
@@ -363,7 +366,7 @@ dict_keys(['map', 'timesteps', 'dt', 'name', 'nodes', 'robot', 'temporal_scene_g
                                                              collate_fn=collate,
                                                              pin_memory=True,
                                                              batch_size=config.eval_batch_size,
-                                                             shuffle=False,
+                                                             shuffle=True,
                                                              num_workers=config.preprocess_workers)
                 self.eval_data_loader[node_type_data_set.node_type] = node_type_dataloader
 

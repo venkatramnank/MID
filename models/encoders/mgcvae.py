@@ -52,6 +52,7 @@ class MultimodalGenerativeCVAE(object):
         self.npl_rate = self.hyperparams['npl_rate']
         self.NPairLoss = NPairLoss(self.hyperparams['tao'])
 
+
     def set_curr_iter(self, curr_iter):
         self.curr_iter = curr_iter
 
@@ -65,6 +66,7 @@ class MultimodalGenerativeCVAE(object):
         ############################
         #   Node History Encoder   #
         ############################
+        #TODO: make sure the input size is 54 (6 x 9)
         self.add_submodule(self.node_type + '/node_history_encoder',
                            model_if_absent=nn.LSTM(input_size=self.state_length,
                                                    hidden_size=self.hyperparams['enc_rnn_dim_history'],
@@ -401,7 +403,7 @@ class MultimodalGenerativeCVAE(object):
         #pdb.set_trace()
         x, x_r_t, y_e, y_r, y = None, None, None, None, None
         initial_dynamics = dict()
-
+        # import pdb; pdb.set_trace()
         batch_size = inputs.shape[0]
        
         #########################################
@@ -412,8 +414,12 @@ class MultimodalGenerativeCVAE(object):
         # node_pos = inputs[:, -1, 0:2]
         # node_vel = inputs[:, -1, 2:4]
         #NOTE: changed values
-        node_pos = inputs[:, -1, 0:3]
-        node_vel = inputs[:, -1, 3:6]
+        #TODO: set node_pos to each of top, bottom and so on
+        node_pos = inputs[:, -1, 0:18]
+        node_vel = inputs[:, -1, 21:36]
+        node_center_pos = inputs[:, -1, 18:21]
+        node_top_pos = inputs[:, -1, 0:3]
+        
         node_history_st = inputs_st
         node_present_state_st = inputs_st[:, -1]
         node_pos_st = inputs_st[:, -1, 0:2]
@@ -423,12 +429,12 @@ class MultimodalGenerativeCVAE(object):
 
         initial_dynamics['pos'] = node_pos
         initial_dynamics['vel'] = node_vel
+        initial_dynamics['center_pos'] = node_center_pos
 
         self.dynamic.set_initial_condition(initial_dynamics)
-
+        
         if self.hyperparams['incl_robot_node']:
             x_r_t, y_r = robot[..., 0, :], robot[..., 1:, :]
-
         ##################
         # Encode History #
         ##################

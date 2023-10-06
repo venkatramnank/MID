@@ -132,7 +132,7 @@ class TemporalSceneGraph(object):
         if N == 0:
             return TemporalSceneGraph(attention_radius)
 
-        position_cube = np.full((total_timesteps, N, 2), np.nan)
+        position_cube = np.full((total_timesteps, N, 18), np.nan)
 
         adj_cube = np.zeros((total_timesteps, N, N), dtype=np.int8)
         dist_cube = np.zeros((total_timesteps, N, N), dtype=np.float32)
@@ -184,6 +184,7 @@ class TemporalSceneGraph(object):
                   adj_cube, weight_cube,
                   node_type_mat,
                   edge_scaling=edge_scaling)
+        
         return tsg
 
     @staticmethod

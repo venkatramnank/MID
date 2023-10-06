@@ -147,12 +147,29 @@ def get_traj_hypers_3D():
         },
     'state':
         {'PEDESTRIAN':
-            {'position': ['x', 'y', 'z'],
-             'velocity': ['x', 'y', 'z'],
-             'acceleration': ['x', 'y', 'z']
+            {'top_position': ['x', 'y', 'z'],
+             'bottom_position': ['x', 'y', 'z'],
+             'front_position': ['x', 'y', 'z'],
+             'back_position': ['x', 'y', 'z'],
+             'left_position': ['x', 'y', 'z'],
+             'right_position': ['x', 'y', 'z'],
+             'center_position' : ['x', 'y', 'z'],
+             'top_velocity': ['x', 'y', 'z'],
+             'bottom_velocity': ['x', 'y', 'z'],
+             'front_velocity': ['x', 'y', 'z'],
+             'back_velocity': ['x', 'y', 'z'],
+             'left_velocity': ['x', 'y', 'z'],
+             'right_velocity': ['x', 'y', 'z'],
+             'top_acceleration': ['x', 'y', 'z'],
+             'bottom_acceleration': ['x', 'y', 'z'],
+             'front_acceleration': ['x', 'y', 'z'],
+             'back_acceleration': ['x', 'y', 'z'],
+             'left_acceleration': ['x', 'y', 'z'],
+             'right_acceleration': ['x', 'y', 'z'], 
+             
             }
         },
-    'pred_state': {'PEDESTRIAN': {'velocity': ['x', 'y', 'z']}}, # originally velocity
+    'pred_state': {'PEDESTRIAN': {'center_velocity': ['x', 'y', 'z']}}, # originally velocity
     'log_histograms': False,
     'dynamic_edges': 'yes',
     'edge_state_combine_method': 'sum',

@@ -58,20 +58,28 @@ class Scene(object):
         :param edge_removal_filter:  Filter for removing edges (Only online)
         :return: Scene Graph for given timestep.
         """
+        
         if self.temporal_scene_graph is None:
             timestep_range = np.array([timestep - len(edge_removal_filter), timestep])
             node_pos_dict = dict()
             present_nodes = self.present_nodes(np.array([timestep]))
 
             for node in present_nodes[timestep]:
-                node_pos_dict[node] = np.squeeze(node.get(timestep_range, {'position': ['x', 'y']}))
+                # node_pos_dict[node] = np.squeeze(node.get(timestep_range, {'position': ['x', 'y']}))
+                node_pos_dict[node] = np.squeeze(node.get(timestep_range, {'top_position': ['x', 'y', 'z'],
+                                                                           'bottom_position': ['x', 'y', 'z'],
+                                                                           'front_position':['x', 'y', 'z'],
+                                                                           'back_position':['x', 'y', 'z'],
+                                                                           'left_position':['x', 'y', 'z'],
+                                                                           'right_position':['x', 'y', 'z']}))
+            # import pdb; pdb.set_trace()
             tsg = TemporalSceneGraph.create_from_temp_scene_dict(node_pos_dict,
                                                                  attention_radius,
                                                                  duration=(len(edge_removal_filter) + 1),
                                                                  edge_addition_filter=edge_addition_filter,
                                                                  edge_removal_filter=edge_removal_filter
                                                                  )
-
+            
             return tsg.to_scene_graph(t=len(edge_removal_filter),
                                       t_hist=len(edge_removal_filter),
                                       t_fut=len(edge_addition_filter))

@@ -87,18 +87,17 @@ def get_node_timestep_data(env, scene, t, node, state, pred_state,
     # Node
     timestep_range_x = np.array([t - max_ht, t])
     timestep_range_y = np.array([t + 1, t + max_ft])
-    # import pdb; pdb.set_trace()
     x = node.get(timestep_range_x, state[node.type])
     y = node.get(timestep_range_y, pred_state[node.type])
     first_history_index = (max_ht - node.history_points_at(t)).clip(0)
 
     _, std = env.get_standardize_params(state[node.type], node.type)
-    std[0:3] = env.attention_radius[(node.type, node.type)]
+    std[0:18] = env.attention_radius[(node.type, node.type)]
     rel_state = np.zeros_like(x[0])
-    rel_state[0:3] = np.array(x)[-1, 0:3]
+    rel_state[0:18] = np.array(x)[-1, 0:18]
     x_st = env.standardize(x, state[node.type], node.type, mean=rel_state, std=std)
-    if list(pred_state[node.type].keys())[0] == 'position':  # If we predict position we do it relative to current pos
-        y_st = env.standardize(y, pred_state[node.type], node.type, mean=rel_state[0:3])
+    if list(pred_state[node.type].keys())[0] == 'center_position':  # If we predict position we do it relative to current pos
+        y_st = env.standardize(y, pred_state[node.type], node.type, mean=rel_state[0:18])
     else:
         y_st = env.standardize(y, pred_state[node.type], node.type)
 
