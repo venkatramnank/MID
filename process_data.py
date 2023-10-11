@@ -228,7 +228,7 @@ for desired_source in ['collide']:
                         ay = derivative_of(vy, scene.dt)
                         az = derivative_of(vz, scene.dt)
 
-                        data_dict = {('position', 'x'): x,
+                        data_dict = {('position', 'x'): x, 
                                      ('position', 'y'): y,
                                      ('position', 'z'): z,
                                      ('velocity', 'x'): vx,

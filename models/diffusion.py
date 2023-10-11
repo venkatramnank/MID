@@ -65,11 +65,11 @@ class DiffusionTraj(Module):
         self.var_sched = var_sched
 
     def get_loss(self, x_0, context, t=None):
-        
+        # here x_0 is the future ground truth velocity trajectory
         batch_size, _, point_dim = x_0.size()
         if t == None:
             t = self.var_sched.uniform_sample_t(batch_size)
-
+        #Here t is a random list of size 256 with values ranging between 1 to 100
         alpha_bar = self.var_sched.alpha_bars[t]
         beta = self.var_sched.betas[t].cuda()
 
@@ -78,7 +78,9 @@ class DiffusionTraj(Module):
 
         e_rand = torch.randn_like(x_0).cuda()  # (B, N, d)
 
-
+        # The below equation is y_k at step k
+        # As we enter the forward function of TransformerConcatLinear, you will observe how the feature vector from encoder
+        # is put to use.
         e_theta = self.net(c0 * x_0 + c1 * e_rand, beta=beta, context=context) #TODO: in model the output features need to be changed
     
         loss = F.mse_loss(e_theta.view(-1, point_dim), e_rand.view(-1, point_dim), reduction='mean') #NOTE: Issue here
@@ -176,7 +178,7 @@ class TransformerConcatLinear(Module):
         super().__init__()
         self.residual = residual
         self.pos_emb = PositionalEncoding(d_model=2*context_dim, dropout=0.1, max_len=24)
-        self.concat1 = ConcatSquashLinear(3,2*context_dim,context_dim+3) #TODO: Changed dim here as well from 2 to 3
+        self.concat1 = ConcatSquashLinear(3,2*context_dim,context_dim+3) 
         self.layer = nn.TransformerEncoderLayer(d_model=2*context_dim, nhead=4, dim_feedforward=4*context_dim)
         self.transformer_encoder = nn.TransformerEncoder(self.layer, num_layers=tf_layer)
         self.concat3 = ConcatSquashLinear(2*context_dim,context_dim,context_dim+3)
@@ -186,22 +188,23 @@ class TransformerConcatLinear(Module):
 
 
     def forward(self, x, beta, context):
+        # import pdb; pdb.set_trace()
         batch_size = x.size(0)
         beta = beta.view(batch_size, 1, 1)          # (B, 1, 1)
         context = context.view(batch_size, 1, -1)   # (B, 1, F)
         
         time_emb = torch.cat([beta, torch.sin(beta), torch.cos(beta)], dim=-1)  # (B, 1, 3)
         ctx_emb = torch.cat([time_emb, context], dim=-1)    # (B, 1, F+3)
-
-        x = self.concat1(ctx_emb,x)
+        # Here x is y_k
+        x = self.concat1(ctx_emb,x) # (256, 12, 512) The shape of x is 
         final_emb = x.permute(1,0,2)
-        final_emb = self.pos_emb(final_emb)
+        final_emb = self.pos_emb(final_emb) #(future len, context_dim , context_dim * 2)
 
         
         trans = self.transformer_encoder(final_emb).permute(1,0,2)
         trans = self.concat3(ctx_emb, trans)
-        trans = self.concat4(ctx_emb, trans)
-        return self.linear(ctx_emb, trans)
+        trans = self.concat4(ctx_emb, trans) #shape of trans is 365, 12, 128
+        return self.linear(ctx_emb, trans) # shape is (context_shape, future, 3)
 
 class TransformerLinear(Module):
 

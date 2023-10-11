@@ -338,8 +338,8 @@ class Trajectron3D(object):
          robot_traj_st_t,
          map) = batch
 
-        x = x_t.to(self.device)
-        y = y_t.to(self.device)
+        x = x_t.to(self.device) #(B, 8, 9)
+        y = y_t.to(self.device) #(B, 12, 3)
         x_st_t = x_st_t.to(self.device)
         y_st_t = y_st_t.to(self.device)
         if robot_traj_st_t is not None:
@@ -349,6 +349,7 @@ class Trajectron3D(object):
 
         # Run forward pass
         model = self.node_models_dict[node_type]
+        # This goes in mgcvae encoder
         feat_x = model.get_latent(inputs=x,
                                 inputs_st=x_st_t,
                                 first_history_indices=first_history_index,

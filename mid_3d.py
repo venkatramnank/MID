@@ -35,7 +35,6 @@ class MID_3D():
             for node_type, data_loader in self.train_data_loader.items():
                 pbar = tqdm(data_loader, ncols=80)
                 for batch in pbar:
-
                     self.optimizer.zero_grad()
                     train_loss = self.model.get_loss(batch, node_type)
                     pbar.set_description(
@@ -45,6 +44,7 @@ class MID_3D():
 
             self.train_dataset.augment = False
             if epoch % self.config.eval_every == 0:
+                
                 self.model.eval()
 
                 node_type = "PEDESTRIAN"
@@ -64,6 +64,7 @@ class MID_3D():
                         ),
                             min_ht=7, max_ht=self.hyperparams['maximum_history_length'], min_ft=12,
                             max_ft=12, hyperparams=self.hyperparams)
+
                         if batch is None:
                             continue
                         test_batch = batch[0]
@@ -71,15 +72,15 @@ class MID_3D():
                         timesteps_o = batch[2]
 
                         traj_pred = self.model.generate(
-                            test_batch, node_type, num_points=12, sample=20, bestof=True)  # B * 20 * 12 * 3
-
-                        predictions = traj_pred
+                            test_batch, node_type, num_points=12, sample=10, bestof=True)  # B * 20 * 12 * 3
+                        
+                        predictions = traj_pred  # (sample , 9(output timesteps), 12, 3)
                         predictions_dict = {}
                         for i, ts in enumerate(timesteps_o):
                             if ts not in predictions_dict.keys():
                                 predictions_dict[ts] = dict()
                             predictions_dict[ts][nodes[i]] = np.transpose(
-                                predictions[:, [i]], (1, 0, 2, 3))
+                                predictions[:, [i]], (1, 0, 2, 3)) # (sample, 1, 12, 3)
 
                         batch_error_dict = evaluation.compute_batch_statistics(predictions_dict,
                                                                                scene.dt,

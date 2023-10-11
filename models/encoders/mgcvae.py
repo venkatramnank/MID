@@ -402,7 +402,7 @@ class MultimodalGenerativeCVAE(object):
         x, x_r_t, y_e, y_r, y = None, None, None, None, None
         initial_dynamics = dict()
 
-        batch_size = inputs.shape[0]
+        batch_size = inputs.shape[0] # Usually set to batch size as in the yaml file
        
         #########################################
         # Provide basic information to encoders #
@@ -412,8 +412,8 @@ class MultimodalGenerativeCVAE(object):
         # node_pos = inputs[:, -1, 0:2]
         # node_vel = inputs[:, -1, 2:4]
         #NOTE: changed values
-        node_pos = inputs[:, -1, 0:3]
-        node_vel = inputs[:, -1, 3:6]
+        node_pos = inputs[:, -1, 0:3] # Current location
+        node_vel = inputs[:, -1, 3:6] # CUrrent Velocity
         node_history_st = inputs_st
         node_present_state_st = inputs_st[:, -1]
         node_pos_st = inputs_st[:, -1, 0:2]
@@ -469,6 +469,7 @@ class MultimodalGenerativeCVAE(object):
                                                                     node_edges_encoded,
                                                                     node_history_encoded,
                                                                     batch_size)
+            # Node edges are also of size 256 x 128
         #pdb.set_trace()
         ################
         # Map Encoding #
@@ -537,8 +538,8 @@ class MultimodalGenerativeCVAE(object):
 
         last_index_per_sequence = -(first_history_indices + 1)
 
-        return outputs[torch.arange(first_history_indices.shape[0]), last_index_per_sequence]
-
+        return outputs[torch.arange(first_history_indices.shape[0]), last_index_per_sequence] # row index upto 256, column index upto 256
+        # The output shape is now (256, 128)
     def encode_edge(self,
                     mode,
                     node_history,
@@ -1012,6 +1013,9 @@ class MultimodalGenerativeCVAE(object):
         # z = self.latent.sample_q(sample_ct, mode)
         # return z
         #pdb.set_trace()
+        
+        # The shape of x below is 256 x 256. It contains both history encoded info and social info 
+        #NOTE: THIS IS  "f"
         return x
 
 
