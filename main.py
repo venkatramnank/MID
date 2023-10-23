@@ -17,10 +17,15 @@ def parse_args():
     parser.add_argument('--dataset', default='')
     return parser.parse_args()
 
+class dummyObj(object):
+    pass
 
 def main():
     # parse arguments and load config
-    args = parse_args()
+    args_dict = {'config':'configs/physion.yaml', 'dataset':'collide'}
+    args = dummyObj()
+    args.__dict__= args_dict
+    # args = parse_args()
     with open(args.config) as f:
        config = yaml.safe_load(f)
 

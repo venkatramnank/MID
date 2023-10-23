@@ -64,7 +64,13 @@ class Scene(object):
             present_nodes = self.present_nodes(np.array([timestep]))
 
             for node in present_nodes[timestep]:
-                node_pos_dict[node] = np.squeeze(node.get(timestep_range, {'position': ['x', 'y']}))
+                node_pos_dict[node] = np.squeeze(node.get(timestep_range, {'top_position': ['x', 'y', 'z'],
+             'bottom_position': ['x', 'y', 'z'],
+             'front_position': ['x', 'y', 'z'],
+             'back_position': ['x', 'y', 'z'],
+             'left_position': ['x', 'y', 'z'],
+             'right_position': ['x', 'y', 'z'],
+            }))
             tsg = TemporalSceneGraph.create_from_temp_scene_dict(node_pos_dict,
                                                                  attention_radius,
                                                                  duration=(len(edge_removal_filter) + 1),

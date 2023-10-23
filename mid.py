@@ -17,7 +17,7 @@ from dataset import EnvironmentDataset, collate, get_timesteps_data, restore
 from models.autoencoder import AutoEncoder
 from models.trajectron import Trajectron
 from utils.model_registrar import ModelRegistrar
-from utils.trajectron_hypers import get_traj_hypers
+from utils.trajectron_hypers import get_traj_hypers_3D
 import evaluation
 
 class MID():

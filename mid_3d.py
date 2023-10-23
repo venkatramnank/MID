@@ -18,7 +18,7 @@ from models.autoencoder import AutoEncoder
 from models.trajectron import Trajectron
 from models.trajectron_3d import Trajectron3D
 from utils.model_registrar import ModelRegistrar
-from utils.trajectron_hypers import get_traj_hypers, get_traj_hypers_3D
+from utils.trajectron_hypers import get_traj_hypers_3D
 import evaluation
 from evaluation.visualization.visualization import visualize_3d_prediction
 
@@ -44,7 +44,6 @@ class MID_3D():
 
             self.train_dataset.augment = False
             if epoch % self.config.eval_every == 0:
-                
                 self.model.eval()
 
                 node_type = "PEDESTRIAN"
@@ -54,9 +53,9 @@ class MID_3D():
                 ph = self.hyperparams['prediction_horizon']
                 max_hl = self.hyperparams['maximum_history_length']
 
-                for i, scene in enumerate(self.eval_scenes):
+                for index, scene in enumerate(self.eval_scenes):
                     print(
-                        f"----- Evaluating Scene {i + 1}/{len(self.eval_scenes)}")
+                        f"----- Evaluating Scene {index + 1}/{len(self.eval_scenes)}")
                     for t in tqdm(range(0, scene.timesteps, 10)):
                         timesteps = np.arange(t, t+10)
                         batch = get_timesteps_data(env=self.eval_env, scene=scene, t=timesteps, node_type=node_type, state=self.hyperparams['state'],
@@ -72,7 +71,7 @@ class MID_3D():
                         timesteps_o = batch[2]
 
                         traj_pred = self.model.generate(
-                            test_batch, node_type, num_points=12, sample=10, bestof=True)  # B * 20 * 12 * 3
+                            test_batch, node_type, num_points=12, sample=20, bestof=True)  # B * 20 * 12 * 3
                         
                         predictions = traj_pred  # (sample , 9(output timesteps), 12, 3)
                         predictions_dict = {}
@@ -96,6 +95,9 @@ class MID_3D():
                             (eval_ade_batch_errors, batch_error_dict[node_type]['ade']))
                         eval_fde_batch_errors = np.hstack(
                             (eval_fde_batch_errors, batch_error_dict[node_type]['fde']))
+                        
+                        # scene_path = '/home/kalyanav/MS_thesis/MID_trained_models/Visualizations/results_oct_14/'
+                        # visualize_3d_prediction(index, t, scene_path, predictions_dict, scene.dt, max_hl=max_hl, ph=ph, robot_node=None, map=None)
 
                 ade = np.mean(eval_ade_batch_errors)
                 fde = np.mean(eval_fde_batch_errors)
@@ -172,7 +174,7 @@ class MID_3D():
                     (eval_ade_batch_errors, batch_error_dict[node_type]['ade']))
                 eval_fde_batch_errors = np.hstack(
                     (eval_fde_batch_errors, batch_error_dict[node_type]['fde']))
-                scene_path = '/home/kalyanav/MS_thesis/MID_trained_models/Visualizations/results_oct_2_run/'
+                scene_path = '/home/kalyanav/MS_thesis/MID_trained_models/Visualizations/results_oct_14/'
                 visualize_3d_prediction(index, t, scene_path, 
                     predictions_dict, scene.dt, max_hl=max_hl, ph=ph, robot_node=None, map=None)
                 

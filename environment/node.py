@@ -6,7 +6,7 @@ from ncls import NCLS
 
 
 class Node(object):
-    def __init__(self, node_type, node_id, data, length=None, width=None, height=None, first_timestep=0,
+    def __init__(self, node_type, node_id, data, r_t_data, length=None, width=None, height=None, first_timestep=0,
                  is_robot=False, description="", frequency_multiplier=1, non_aug_node=None):
         self.type = node_type
         self.id = node_id
@@ -24,6 +24,7 @@ class Node(object):
         else:
             self.data = None
 
+        self.r_t_data = r_t_data
         self.is_robot = is_robot
         self._last_timestep = None
         self.description = description
@@ -101,6 +102,37 @@ class Node(object):
         padded_data_array = np.full((length, data_array.shape[1]), fill_value=padding)
         padded_data_array[paddingl:length - paddingu] = data_array
         return padded_data_array
+    
+    
+    import numpy as np
+
+    def get_r_t_values_between_timeframes(self, time_step_range, padding=np.nan):
+        """
+        Returns values from a numpy array between specified timeframes.
+
+        :param data_array: Numpy array containing the data.
+        :param start_time: Start timestamp (inclusive).
+        :param end_time: End timestamp (inclusive).
+        :param padding: The value which should be used for padding if not enough information is available.
+        :return: Array of values between the specified timeframes.
+        """
+        # Ensure start_time and end_time are integers
+        start_time = time_step_range[0]
+        end_time = time_step_range[1]
+        start_time, end_time = int(start_time), int(end_time)
+        
+        # Calculate the length of the output array
+        length = end_time - start_time + 1
+        
+        # Get data within the specified time range
+        selected_data = self.r_t_data[start_time:end_time + 1, :, :]
+        
+        # Pad the data if necessary
+        # padded_data = np.full((length, selected_data.shape[1]), fill_value=padding)
+        # padded_data[:selected_data.shape[0]] = selected_data
+        
+        return selected_data
+
 
     @property
     def timesteps(self) -> int:
